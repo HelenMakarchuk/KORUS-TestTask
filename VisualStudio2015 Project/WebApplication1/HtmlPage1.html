@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>КОРУС</title>
+	<meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="StyleSheet1.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+<body>
+    <header>
+        <span>Таблица представления контактов</span>
+    </header>
+    
+    <table id="Table" align="center" border="1">
+        <tr>
+            <th>ФИО</th>
+            <th>Адрес</th>
+            <th>Телефон</th>
+        </tr>
+    </table>
+
+    <script>
+        window.lastid = 0;
+
+        function f1() {
+
+            var jsonData = JSON.stringify({
+                lastId: window.lastid
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: 'WebService1.asmx/GetNewData',
+                dataType: 'json',
+                data: jsonData,
+                async: false,
+                contentType: 'application/json; charset=utf-8',
+                success: function (data) {
+
+                    for (i = 0; i < data.d.length; i++) {
+
+                        var json = JSON.stringify(data.d[i]);
+                        var string = JSON.parse(json);
+                        var array = new Array(string.fullname, string.address);
+
+                        if (string.phone != null) {
+
+                            var phones = (string.phone).toString();
+
+                            if (/9/i.test(phones)) {
+
+                                var phonesArray = phones.split(",");
+                                var displayNumbersArray = new Array();
+
+                                for (j = 0; j < phonesArray.length; j++) {
+
+                                    v1 = phonesArray[j].substr(0, 1);
+                                    v2 = phonesArray[j].substr(1, 3);
+                                    v3 = phonesArray[j].substr(4, 3);
+                                    v4 = phonesArray[j].substr(7, 2);
+                                    v5 = phonesArray[j].substr(9, 2);
+                                    displayNumber = "+" + v1 + "(" + v2 + ")" + v3 + "-" + v4 + "-" + v5;
+                                    displayNumbersArray[j] = displayNumber;
+                                }
+                            }
+                            else {
+                                displayNumbersArray = "";
+                            }
+                        }
+                        else {
+                            displayNumbersArray = "";
+                        }
+                                                                                     
+                        if (i != data.d.length - 1) {
+                            $('#Table tr:last').after('<tr> <td>' + array[0] + '</td> <td>' + array[1] + '</td> <td>' + displayNumbersArray + '</td> </tr>');
+                        }
+                        else {
+                            window.lastid = parseInt(array[0]);
+                        }
+                    }
+                },
+
+                error: function (error) {
+                    console.log(error);
+                }
+            })           
+        }
+
+        f1();
+
+        setInterval(function () {
+            f1()
+        }, 20000);
+        
+    </script>    
+
+</body>
+</html>
+
+
+
+
+           
